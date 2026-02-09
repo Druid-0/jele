@@ -11,19 +11,11 @@ import '../../domain/models/user_profile.dart';
 import '../../domain/repositories/school_repository.dart';
 import '../local/app_database.dart';
 import '../local/school_local_data_source.dart';
-import '../remote/school_remote_data_source.dart';
 
 class DriftSchoolRepository implements SchoolRepository {
-  DriftSchoolRepository(
-    this._local, {
-    SchoolRemoteDataSource? remote,
-    bool enableRemote = false,
-  })  : _remote = remote,
-        _enableRemote = enableRemote;
+  DriftSchoolRepository(this._local);
 
   final SchoolLocalDataSource _local;
-  final SchoolRemoteDataSource? _remote;
-  final bool _enableRemote;
 
   static const _weekdayNames = [
     'Понедельник',
@@ -48,6 +40,11 @@ class DriftSchoolRepository implements SchoolRepository {
     }
     final user = await _local.fetchUserByEmailAndPassword(email, password);
     return user == null ? null : _mapUser(user);
+    final user = await _local.fetchUserByEmailAndPassword(email, password);
+    if (user == null) {
+      return null;
+    }
+    return _mapUser(user);
   }
 
   @override
@@ -164,12 +161,6 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<List<TeacherContact>> fetchTeacherContactsForStudent(String studentId) async {
-    if (_enableRemote && _remote != null) {
-      final remoteContacts = await _remote!.fetchTeacherContactsForStudent(studentId);
-      if (remoteContacts.isNotEmpty) {
-        return remoteContacts;
-      }
-    }
     final rows = await _local.fetchTeacherContacts(studentId);
     return rows
         .map((row) => TeacherContact(
@@ -184,12 +175,6 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<List<ParentContact>> fetchParentContactsForTeacher(String teacherId) async {
-    if (_enableRemote && _remote != null) {
-      final remoteContacts = await _remote!.fetchParentContactsForTeacher(teacherId);
-      if (remoteContacts.isNotEmpty) {
-        return remoteContacts;
-      }
-    }
     final rows = await _local.fetchParentContacts(teacherId);
     return rows
         .map((row) => ParentContact(
@@ -204,12 +189,6 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<List<ClassGroup>> fetchClassGroupsForTeacher(String teacherId) async {
-    if (_enableRemote && _remote != null) {
-      final remoteGroups = await _remote!.fetchClassGroupsForTeacher(teacherId);
-      if (remoteGroups.isNotEmpty) {
-        return remoteGroups;
-      }
-    }
     final groups = await _local.fetchClassGroups(teacherId);
     final result = <ClassGroup>[];
     for (final group in groups) {
@@ -237,9 +216,6 @@ class DriftSchoolRepository implements SchoolRepository {
     required String subject,
     required int value,
   }) async {
-    if (_enableRemote && _remote != null) {
-      await _remote!.addGrade(studentId: studentId, subject: subject, value: value);
-    }
     final subjects = await _local.fetchSubjects();
     final subjectRow = subjects.firstWhereOrNull((s) => s.name == subject);
     final subjectId = subjectRow?.id ?? 'math';
