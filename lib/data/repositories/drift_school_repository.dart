@@ -32,6 +32,14 @@ class DriftSchoolRepository implements SchoolRepository {
     required String email,
     required String password,
   }) async {
+    if (_enableRemote && _remote != null) {
+      final remoteUser = await _remote!.authenticate(email: email, password: password);
+      if (remoteUser != null) {
+        return remoteUser;
+      }
+    }
+    final user = await _local.fetchUserByEmailAndPassword(email, password);
+    return user == null ? null : _mapUser(user);
     final user = await _local.fetchUserByEmailAndPassword(email, password);
     if (user == null) {
       return null;
@@ -41,12 +49,24 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<UserProfile?> fetchUserById(String id) async {
+    if (_enableRemote && _remote != null) {
+      final remoteUser = await _remote!.fetchUserById(id);
+      if (remoteUser != null) {
+        return remoteUser;
+      }
+    }
     final user = await _local.fetchUserById(id);
     return user == null ? null : _mapUser(user);
   }
 
   @override
   Future<List<StudentProfile>> fetchChildrenForParent(String parentId) async {
+    if (_enableRemote && _remote != null) {
+      final remoteChildren = await _remote!.fetchChildrenForParent(parentId);
+      if (remoteChildren.isNotEmpty) {
+        return remoteChildren;
+      }
+    }
     final rows = await _local.fetchChildrenForParent(parentId);
     return rows
         .map((row) => StudentProfile(
@@ -59,6 +79,12 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<StudentProfile?> fetchStudentById(String studentId) async {
+    if (_enableRemote && _remote != null) {
+      final remoteStudent = await _remote!.fetchStudentById(studentId);
+      if (remoteStudent != null) {
+        return remoteStudent;
+      }
+    }
     final row = await _local.fetchStudentById(studentId);
     if (row == null) {
       return null;
@@ -68,6 +94,12 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<List<GradeSummary>> fetchGradesForStudent(String studentId) async {
+    if (_enableRemote && _remote != null) {
+      final remoteGrades = await _remote!.fetchGradesForStudent(studentId);
+      if (remoteGrades.isNotEmpty) {
+        return remoteGrades;
+      }
+    }
     final grades = await _local.fetchGradesForStudent(studentId);
     final subjects = await _local.fetchSubjects();
     final subjectMap = {for (final s in subjects) s.id: s.name};
@@ -91,11 +123,17 @@ class DriftSchoolRepository implements SchoolRepository {
 
   @override
   Future<List<ScheduleDay>> fetchScheduleForStudent(String studentId) {
+    if (_enableRemote && _remote != null) {
+      return _remote!.fetchScheduleForStudent(studentId);
+    }
     return _fetchSchedule(ownerType: 'student', ownerId: studentId);
   }
 
   @override
   Future<List<ScheduleDay>> fetchScheduleForTeacher(String teacherId) {
+    if (_enableRemote && _remote != null) {
+      return _remote!.fetchScheduleForTeacher(teacherId);
+    }
     return _fetchSchedule(ownerType: 'teacher', ownerId: teacherId);
   }
 
