@@ -1,0 +1,26 @@
+name: edu_platform
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  drift: ^2.20.0
+  drift_flutter: ^2.20.0
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  intl: ^0.19.0
+
+flutter:
+  uses-material-design: true
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  drift_dev: ^2.20.0
+  build_runner: ^2.4.12
