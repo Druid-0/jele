@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/theme/app_theme.dart';
-
 import 'core/config/api_config.dart';
+import 'core/theme/app_theme.dart';
 import 'data/local/app_database.dart';
 import 'data/local/school_local_data_source.dart';
 import 'data/remote/school_remote_data_source.dart';
-
-import 'data/local/app_database.dart';
-import 'data/local/school_local_data_source.dart';
-
 import 'data/repositories/drift_school_repository.dart';
 import 'domain/repositories/school_repository.dart';
 import 'presentation/screens/app_router.dart';
@@ -30,7 +25,6 @@ class GreetingMessageApp extends StatelessWidget {
         Provider<SchoolLocalDataSource>(
           create: (context) => SchoolLocalDataSource(context.read<AppDatabase>()),
         ),
-codex/develop-android-app-in-flutter-with-mvvm-b49v91
         Provider<SchoolRemoteDataSource>(
           create: (_) => SchoolRemoteDataSource(baseUrl: ApiConfig.baseUrl),
         ),
@@ -40,10 +34,6 @@ codex/develop-android-app-in-flutter-with-mvvm-b49v91
             remote: context.read<SchoolRemoteDataSource>(),
             enableRemote: ApiConfig.enableRemote,
           ),
-
-        Provider<SchoolRepository>(
-          create: (context) => DriftSchoolRepository(context.read<SchoolLocalDataSource>()),
-
         ),
         ChangeNotifierProvider<AppStateViewModel>(
           create: (context) => AppStateViewModel(repository: context.read<SchoolRepository>()),
